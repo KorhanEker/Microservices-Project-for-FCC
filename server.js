@@ -35,7 +35,7 @@ app.get('/api/timestamp/:date_string', (req, res, next) => {
   var dateString = req.params.date_string;
   var dateVal = moment(dateString);
   if(dateVal.isValid()){
-    res.json({ unix: dateVal.valueOf(), utc: dateVal.utc().toString()});
+    res.json({ unix: dateVal.valueOf(), utc: new Date(dateString).toUTCString()});
   }else{
     if(isNaN(Number(dateString))){
       res.json({ 'error': 'Invalid Date' });
@@ -43,7 +43,7 @@ app.get('/api/timestamp/:date_string', (req, res, next) => {
     else{
       var adjustedDate = moment(Number(dateString));
       if(adjustedDate.isValid()){
-        res.json({ unix: adjustedDate.valueOf(), utc: adjustedDate.utc().toString() });
+        res.json({ unix: adjustedDate.valueOf(), utc: new Date(Number(dateString)).toUTCString() });
       }
       else{
         res.json({ 'error': 'Invalid Date' });

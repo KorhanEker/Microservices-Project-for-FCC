@@ -16,10 +16,17 @@ app.use(cors({ optionsSuccessStatus: 200 }));  // some legacy browsers choke on 
 app.use(express.static('public')); //  this is to serve  images, CSS files, and JavaScript files in a directory named public
 
 // http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (req, res) {
+app.get("/", (req, res) =>{
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/timestamp',(req,res)=>{
+  res.sendFile(__dirname + '/views/timestamp.html');
+})
+
+app.get('/requestHeaderParcer',(req,res)=>{
+  res.sendFile(__dirname + '/views/requestHeaderParcer.html');
+})
 
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
@@ -55,16 +62,3 @@ app.get('/api/timestamp/:date_string', (req, res, next) => {
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);
 });
-/*
-app.get('/api/timestamp/:date_string',(req,res)=>{
-  let dateString = req.params.date_string;
-  let dateVal= new Date(dateString);
-  if(dateVal)
-  res.json({unix : dateVal.valueOf() , utc : dateVal.getUTCDate()});
-});
-
-// listen for requests :)
-var listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
-});
-*/

@@ -4,8 +4,12 @@
 // init project
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser')
 var moment = require('moment'); // require
 moment().format(); 
+
+app.use(bodyParser.json())
+app.set('json spaces', 4)
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -24,8 +28,8 @@ app.get('/timestamp',(req,res)=>{
   res.sendFile(__dirname + '/views/timestamp.html');
 })
 
-app.get('/requestHeaderParcer',(req,res)=>{
-  res.sendFile(__dirname + '/views/requestHeaderParcer.html');
+app.get('/requestHeaderParser',(req,res)=>{
+  res.sendFile(__dirname + '/views/requestHeaderParser.html');
 })
 
 // your first API endpoint... 
@@ -57,6 +61,14 @@ app.get('/api/timestamp/:date_string', (req, res, next) => {
       }
     }
   }
+});
+
+app.get('/api/whoami',(req,res)=>{
+  res.json({
+    ipaddress: req.socket.remoteAddress,
+    language: req.headers['accept-language'],
+    reqHeaders: req.headers['user-agent']
+  });
 });
 
 var listener = app.listen(process.env.PORT || 3000, () => {

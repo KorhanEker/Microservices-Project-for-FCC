@@ -1,6 +1,4 @@
-
-
-var database_uri = 'mongodb+srv://korhan-eker-practice:kp3EQ27asr@korhanekerpractice.dtt6b.mongodb.net/korhanEkerPractice?retryWrites=true&w=majority'
+require('dotenv').config();
 // server.js
 // where your node app starts
 
@@ -16,7 +14,7 @@ var { nanoid } = require('nanoid');
 const validUrl = require('valid-url');
 var dns = require('dns')
 moment().format();
-mongoose.connect(database_uri, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 // we need to create a schema 
 const urlSchema = new Schema({
   short_url: String,
@@ -43,6 +41,8 @@ app.use(express.static('public')); //  this is to serve  images, CSS files, and 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
+  (mongoose.connection.readyState === 1) ? status = "MongoDB online" : status = "MongoDB offline"
+  console.log(status)
 });
 
 app.get('/timestamp', (req, res) => {
@@ -112,25 +112,34 @@ app.post('/api/shorturl/new', (req, res) => {
     else {
       //creating a document from model (to be saved into DB later on)
       let postedURL = req.body.url;
-      if (!validUrl.isUri(postedURL)) {
+      if (!/^https?:\/\//i.test(postedURL)) {
         res.json({
           error: 'invalid url'
         });
       }
       else {
-        let suffix = nanoid(6);
-        let newURL = new ShortURL({
-          original_url: postedURL,
-          short_url: suffix
-        });
-        //to save the document to DB
-        newURL.save((err, doc) => {
-          if (err) return console.error(err);
-          res.json({
-            saved: true,
-            short_url: newURL.short_url,
-            original_url: newURL.original_url,
-          })
+        const urlObject = new URL(postedURL);
+        console.log(urlObject);
+        dns.lookup(urlObject.hostname, (err, address, family) => {
+          if (err) {
+            res.json({ error: 'invalid url' });
+          }
+          else {
+            let suffix = nanoid(6);
+            let newURL = new ShortURL({
+              original_url: postedURL,
+              short_url: suffix
+            });
+            //to save the document to DB
+            newURL.save((err, doc) => {
+              if (err) return console.error(err);
+              res.json({
+                saved: true,
+                short_url: newURL.short_url,
+                original_url: newURL.original_url,
+              })
+            });
+          }
         });
       }
     }

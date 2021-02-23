@@ -14,6 +14,7 @@ const { Schema } = mongoose;
 var moment = require('moment'); // require
 var { nanoid } = require('nanoid');
 const validUrl = require('valid-url');
+var dns = require('dns')
 moment().format();
 mongoose.connect(database_uri, { useNewUrlParser: true, useUnifiedTopology: true });
 // we need to create a schema 

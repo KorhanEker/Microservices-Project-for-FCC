@@ -112,24 +112,26 @@ app.post('/api/shorturl/new', (req, res) => {
       //creating a document from model (to be saved into DB later on)
       let postedURL = req.body.url;
       if (!validUrl.isUri(postedURL)) {
-        if (!/^Https?:\/\//i.test(req.body.url)) {
-          postedURL = 'https://' + postedURL;
-        }
-      }
-      let suffix = nanoid(6);
-      let newURL = new ShortURL({
-        original_url: postedURL,
-        short_url: suffix
-      });
-      //to save the document to DB
-      newURL.save((err, doc) => {
-        if (err) return console.error(err);
         res.json({
-          saved: true,
-          short_url: newURL.short_url,
-          original_url: newURL.original_url,
-        })
-      });
+          error: 'invalid url'
+        });
+      }
+      else {
+        let suffix = nanoid(6);
+        let newURL = new ShortURL({
+          original_url: postedURL,
+          short_url: suffix
+        });
+        //to save the document to DB
+        newURL.save((err, doc) => {
+          if (err) return console.error(err);
+          res.json({
+            saved: true,
+            short_url: newURL.short_url,
+            original_url: newURL.original_url,
+          })
+        });
+      }
     }
   });
 });

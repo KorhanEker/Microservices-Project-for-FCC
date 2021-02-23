@@ -45,6 +45,7 @@ app.get("/", (req, res) => {
   console.log(status)
 });
 
+//Links
 app.get('/timestamp', (req, res) => {
   res.sendFile(__dirname + '/views/timestamp.html');
 })
@@ -57,6 +58,9 @@ app.get('/urlShortener', (req, res) => {
   res.sendFile(__dirname + '/views/urlShortener.html');
 })
 
+app.get('/exerciseTracker',(req, res) => {
+  res.sendFile(__dirname + '/views/exerciseTracker.html');
+})
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({ greeting: 'hello API' });

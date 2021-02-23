@@ -19,9 +19,14 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
 const urlSchema = new Schema({
   short_url: String,
   original_url: String
-})
-
+});
+const userSchema = new Schema({
+  username: String
+});
+// Defining models to use schemas
 var ShortURL = mongoose.model('ShortURL', urlSchema);
+var User = mongoose.model('User', userSchema);
+
 
 app.use(bodyParser.json());
 // parse application/x-www-form-urlencoded
@@ -58,7 +63,7 @@ app.get('/urlShortener', (req, res) => {
   res.sendFile(__dirname + '/views/urlShortener.html');
 })
 
-app.get('/exerciseTracker',(req, res) => {
+app.get('/exerciseTracker', (req, res) => {
   res.sendFile(__dirname + '/views/exerciseTracker.html');
 })
 // your first API endpoint... 
@@ -158,6 +163,49 @@ app.get('/api/shorturl/:suffix', (req, res) => {
     let urlForRedirect = foundURLs[0];
     res.redirect(urlForRedirect.original_url);
   });
+})
+
+function isBlank(str) {
+  return (!str || /^\s*$/.test(str));
+}
+
+app.post('/api/exercise/new-user', (req, res) => {
+  let postedUser = req.body.username;
+  if (isBlank(postedUser)) { return console.error('No username has been provided'); }
+  else {
+    postedUser = postedUser.replace(/^\s+|\s+$|\s+(?=\s)/g, ""); // removing unnecessary whitespaces from the posted user name
+    User.find({ username: postedUser }, (err, users) => {
+      if (users.length > 0) {
+        res.json({
+          saved: false,
+          username: users[0].username,
+          _id: users[0].get('_id')
+        })
+      }
+      else {
+        let newUser = new User({
+          username: postedUser
+        })
+        newUser.save((err, doc) => {
+          if (err) return console.error(err);
+          res.json({
+            saved: true,
+            username: newUser.username,
+            _id: newUser.get('_id'),
+          })
+        });
+      }
+    });
+  }
+})
+
+app.get('/api/exercise/users',(req,res)=>{
+  User.find({},(err,users)=>{
+    /* var transformedUsers = users.map((user)=>{
+      return user.toJSON();
+    }); */
+    res.json(users);
+  })
 })
 
 var listener = app.listen(process.env.PORT || 3000, () => {

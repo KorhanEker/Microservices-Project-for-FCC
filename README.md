@@ -1,5 +1,5 @@
 
-# Korhan Eker Practice for Microservices - Timestamp 
+# Korhan Eker Practice for Microservices
 
 # Description:
 

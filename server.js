@@ -223,7 +223,7 @@ app.post('/api/exercise/add', (req, res) => {
       userId: req.body.userId,
       description: req.body.description,
       duration: parseInt(req.body.duration),
-      date: date
+      date: dateformat(date,'yyyy-mm-dd')
     });
 
     newExercise.save((err,doc)=>{
@@ -233,12 +233,13 @@ app.post('/api/exercise/add', (req, res) => {
         username: user.username,
         description: newExercise.description,
         duration: newExercise.duration,
-        date: new Date(newExercise.date).toDateString()
+        date: newExercise.date
       };
       res.json(rObj);
     });
   });  
 });
+
 
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);

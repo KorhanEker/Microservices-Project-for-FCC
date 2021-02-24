@@ -1,22 +1,25 @@
 <html>
 
-   <head>
-      <title>Exercise Tracker | Free Code Camp</title>
-      <link rel="shortcut icon" href="https://cdn.freecodecamp.org/universal/favicons/favicon-32x32.png" type="image/x-icon"/>
-      <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
-      <link href="style.css" rel="stylesheet" type="text/css">
-   </head>
+<head>
+   <title>Exercise Tracker</title>
+   <link href='https://cdn.hyperdev.com/us-east-1%3A52a203ff-088b-420f-81be-45bf559d01b1%2Ffavicon.ico'
+      rel='shortcut icon' type='image/x-icon'>
+   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+   <link href="style.css" rel="stylesheet" type="text/css">
+   <link href='https://use.fontawesome.com/releases/v5.9.0/css/all.css' rel='stylesheet' crossorigin="anonymous">
+</head>
 
-   <body class = "body-exercise">
-      <div class="container">
-         <h1>Exercise tracker</h1>
-          <form action="/api/exercise/new-user" method="post" class='form-exercise'>
+<body class="body-exercise">
+   <div class="container">
+      <h2>Exercise tracker (Note: Not Responsive)</h2>
+      <div class='forms'>
+         <form action="/api/exercise/new-user" method="post">
             <h3>Create a New User</h3>
             <p><code class='code-exercise'>POST /api/exercise/new-user</code></p>
             <input id="uname" type="text" name="username" placeholder="username" class='input-exercise'>
             <input type="submit" value="Submit" class='input-exercise'>
-          </form>
-          <form action="/api/exercise/add" method="post" class='form-exercise'>
+         </form>
+         <form action="/api/exercise/add" method="post">
             <h3>Add exercises</h3>
             <p><code class='code-exercise'>POST /api/exercise/add</code></p>
             <input id="uid" type="text" name="userId" placeholder="userId*" class='input-exercise'>
@@ -24,11 +27,42 @@
             <input id="dur" type="text" name="duration" placeholder="duration* (mins.)" class='input-exercise'>
             <input id="dat" type="text" name="date" placeholder="date (yyyy-mm-dd)" class='input-exercise'>
             <input type="submit" value="Submit" class='input-exercise'>
-          </form>
-          <p><strong>GET users's exercise log: </strong><code class='code-exercise'>GET /api/exercise/log?{userId}[&amp;from][&amp;to][&amp;limit]</code></p>
-          <p><strong>{ }</strong> = required, <strong>[ ]</strong> = optional</p>
-          <p><strong>from, to</strong> = dates (yyyy-mm-dd); <strong>limit</strong> = number</p>
+         </form>
       </div>
-   </body>
+      <div class='explanations'>
+         <p><strong>GET users's exercise log: </strong><code
+               class='code-exercise'>GET /api/exercise/log?{userId}[&amp;from][&amp;to][&amp;limit]</code></p>
+         <p><strong>GET all users in the DB : </strong><code class='code-exercise'>GET /api/exercise/users</code></p>
+         <p><strong>{ }</strong> = required, <strong>[ ]</strong> = optional</p>
+         <p><strong>from, to</strong> = dates (yyyy-mm-dd); <strong>limit</strong> = number</p>
+         <div class='breaker-line'></div>
+         <h2>User Stories</h2>
+         <p><i class='fas fa-check-circle'></i>You should provide your own project, not the example URL.</p>
+         <p><i class='fas fa-check-circle'></i>You can <code class='code-exercise'>POST</code> to <code
+               class='code-exercise'>/api/exercise/new-user</code> with form data username to create a new user. The
+            returned response
+            will be an object with username and _id properties.</p>
+         <p><i class='fas fa-check-circle'></i>You can make a <code class='code-exercise'>GET</code> request to <code
+               class='code-exercise'>api/exercise/users</code> to get an array of all users. Each element in the array
+            is
+            an object containing a user's username and _id.</p>
+         <p><i class='fas fa-check-circle'></i>You can <code class='code-exercise'>POST</code> to <code
+               class='code-exercise'>/api/exercise/add</code> with form data userId=_id, description, duration, and
+            optionally date. If
+            no date is supplied, the current date will be used. The response returned will be the user object with the
+            exercise fields added.</p>
+         <p><i class='fas fa-check-circle'></i>You can make a <code class='code-exercise'>GET</code> request to <code
+               class='code-exercise'>/api/exercise/log</code> with a parameter of userId=_id to retrieve a full exercise
+            log of any user. The returned response will be the user object with a log array of all the exercises added.
+            Each log item has the description, duration, and date properties.</p>
+         <p><i class='fas fa-check-circle'></i>A request to a user's log (<code
+               class='code-exercise'>/api/exercise/log</code>) returns an object with a count property representing the
+            number of exercises returned.</p>
+         <p><i class='fas fa-check-circle'></i>You can add from, to and limit parameters to a <code
+               class='code-exercise'>/api/exercise/log</code> request to retrieve part of the log of any
+            user. from and to are dates in yyyy-mm-dd format. limit is an integer of how many logs to send back.</p>
+      </div>
+   </div>
+</body>
 
 </html>

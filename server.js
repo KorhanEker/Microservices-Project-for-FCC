@@ -14,6 +14,8 @@ var { nanoid } = require('nanoid');
 const validUrl = require('valid-url');
 var dns = require('dns')
 moment().format();
+
+
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 // we need to create a schema 
 const urlSchema = new Schema({
@@ -21,12 +23,19 @@ const urlSchema = new Schema({
   original_url: String
 });
 const userSchema = new Schema({
-  username: String
+  username: String,
+  _id: String
 });
+const exerciseSchema = new Schema({
+  userId: { type: String, required: true },
+  description: { type: String, required: true },
+  duration: { type: Number, required: true },
+  date: { type: Date, default: Date.now },
+})
 // Defining models to use schemas
 var ShortURL = mongoose.model('ShortURL', urlSchema);
 var User = mongoose.model('User', userSchema);
-
+var Exercise = mongoose.model('Exercise', exerciseSchema);
 
 app.use(bodyParser.json());
 // parse application/x-www-form-urlencoded
@@ -38,6 +47,7 @@ app.set('json spaces', 4);
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
 const { json } = require('body-parser');
+const { Console } = require('console');
 app.use(cors({ optionsSuccessStatus: 200 }));  // some legacy browsers choke on 204
 
 // http://expressjs.com/en/starter/static-files.html
@@ -184,14 +194,15 @@ app.post('/api/exercise/new-user', (req, res) => {
       }
       else {
         let newUser = new User({
-          username: postedUser
+          username: postedUser,
+          _id: nanoid(5)
         })
         newUser.save((err, doc) => {
           if (err) return console.error(err);
           res.json({
             saved: true,
             username: newUser.username,
-            _id: newUser.get('_id'),
+            _id: newUser._id,
           })
         });
       }
@@ -199,14 +210,37 @@ app.post('/api/exercise/new-user', (req, res) => {
   }
 })
 
-app.get('/api/exercise/users',(req,res)=>{
-  User.find({},(err,users)=>{
-    /* var transformedUsers = users.map((user)=>{
-      return user.toJSON();
-    }); */
+app.get('/api/exercise/users', (req, res) => {
+  User.find({}, (err, users) => {
     res.json(users);
   })
 })
+
+app.post('/api/exercise/add', (req, res) => {
+  let user = User.findById(req.body.userId,(err,user)=>{
+    if(err){return console.error(err,' <= No user with the id found');}
+    var date = isBlank(req.body.date) ? new Date():new Date(req.body.date);
+    const newExercise = new Exercise({
+      userId: req.body.userId,
+      description: req.body.description,
+      duration: req.body.duration,
+      date: date
+    });
+    console.log(newExercise,' <= newExercise');
+    console.log(user, ' <= user')
+    newExercise.save((err,doc)=>{
+      if(err) return console.error(err);
+      let rObj = {
+        username: user.username,
+        userId: req.body.userId,
+        description: req.body.description,
+        duration: req.body.duration,
+        date: date
+      };
+      res.json(rObj);
+    });
+  });  
+});
 
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);

@@ -25,10 +25,10 @@ var ShortURL = mongoose.model('ShortURL', new Schema({
   original_url: String
 }));
 var User = mongoose.model('User', new Schema({
-  username: {type:String,required:true},
+  username: { type: String, required: true },
   _id: String
 }));
-var Exercise = mongoose.model('Exercise',  new Schema({
+var Exercise = mongoose.model('Exercise', new Schema({
   userId: { type: String, required: true },
   description: { type: String, required: true },
   duration: { type: Number, required: true },
@@ -216,32 +216,53 @@ app.get('/api/exercise/users', (req, res) => {
 
 app.post('/api/exercise/add', (req, res) => {
   let user = User.findById(req.body.userId,
-    (err,user)=>{
-    if(err){return console.error(err,' <= No user with the id found');}
-    var date = isBlank(req.body.date) ? new Date().toISOString().substring(0,10):new Date(req.body.date).toISOString().substring(0.10);
-    const newExercise = new Exercise({
-      userId: req.body.userId,
-      description: req.body.description,
-      duration: parseInt(req.body.duration),
-      date: dateformat(date,'yyyy-mm-dd')
-    });
+    (err, user) => {
+      if (err) { return console.error(err, ' <= No user with the id found'); }
+      var date = isBlank(req.body.date) ? new Date().toISOString().substring(0, 10) : new Date(req.body.date).toISOString().substring(0.10);
+      const newExercise = new Exercise({
+        userId: req.body.userId,
+        description: req.body.description,
+        duration: parseInt(req.body.duration),
+        date: date
+      });
 
-    newExercise.save((err,doc)=>{
-      if(err) return console.error(err);
-      let rObj = {
-        _id:user._id,
-        username: user.username,
-        description: newExercise.description,
-        duration: newExercise.duration,
-        date: newExercise.date
-      };
-      res.json(rObj);
+      newExercise.save((err, doc) => {
+        if (err) return console.error(err);
+        let rObj = {
+          _id: user._id,
+          username: user.username,
+          description: newExercise.description,
+          duration: newExercise.duration,
+          date: new Date(newExercise.date).toDateString()
+        };
+        res.json(rObj);
+      });
     });
-  });  
 });
 
+app.get('/api/exercise/log', (req, res) => {
+  let userID = req.query.userId;
+  User.findById(userID, (err, user) => {
+    if (err) { return console.error(err); }
+    let userObj = {
+      _id: userID,
+      username: user.username
+    };
+    console.log(userObj,' <= userObj');
+    Exercise.find({ userId: userID }, (err, exercises) => {
+      if (err) { return console.error(err); }
+      console.log(userObj, ' <= userObj')
+      console.log(exercises, ' <= exercises');
+      let exerciseObj = {log: exercises};
+      let mergedObj = Object.assign(userObj, exerciseObj);
+      console.log(mergedObj, ' <= mergedObj');
+      res.json(mergedObj);
+    });
+  })
+});
 
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);
 });
+
 

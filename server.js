@@ -18,25 +18,22 @@ moment().format();
 
 
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-// we need to create a schema 
-const urlSchema = new Schema({
+
+// Defining models that use schemas
+var ShortURL = mongoose.model('ShortURL', new Schema({
   short_url: String,
   original_url: String
-});
-const userSchema = new Schema({
-  username: String,
+}));
+var User = mongoose.model('User', new Schema({
+  username: {type:String,required:true},
   _id: String
-});
-const exerciseSchema = new Schema({
+}));
+var Exercise = mongoose.model('Exercise',  new Schema({
   userId: { type: String, required: true },
   description: { type: String, required: true },
   duration: { type: Number, required: true },
   date: { type: Date, default: Date.now },
-})
-// Defining models to use schemas
-var ShortURL = mongoose.model('ShortURL', urlSchema);
-var User = mongoose.model('User', userSchema);
-var Exercise = mongoose.model('Exercise', exerciseSchema);
+}));
 
 app.use(bodyParser.json());
 // parse application/x-www-form-urlencoded
@@ -218,25 +215,25 @@ app.get('/api/exercise/users', (req, res) => {
 })
 
 app.post('/api/exercise/add', (req, res) => {
-  let user = User.findById(req.body.userId,(err,user)=>{
+  let user = User.findById(req.body.userId,
+    (err,user)=>{
     if(err){return console.error(err,' <= No user with the id found');}
-    var date = isBlank(req.body.date) ? new Date():new Date(req.body.date);
+    var date = isBlank(req.body.date) ? new Date().toISOString().substring(0,10):new Date(req.body.date).toISOString().substring(0.10);
     const newExercise = new Exercise({
       userId: req.body.userId,
       description: req.body.description,
-      duration: req.body.duration,
+      duration: parseInt(req.body.duration),
       date: date
     });
-    console.log(newExercise,' <= newExercise');
-    console.log(user, ' <= user')
+
     newExercise.save((err,doc)=>{
       if(err) return console.error(err);
-      let rObj = {...user._doc,...{
+      let rObj = {
+        _id:user._id,
         username: user.username,
-        userId: req.body.userId,
-        description: req.body.description,
-        duration: req.body.duration,
-        date: dateformat(date,'yyyy-mm-dd')}
+        description: newExercise.description,
+        duration: newExercise.duration,
+        date: new Date(newExercise.date).toDateString()
       };
       res.json(rObj);
     });

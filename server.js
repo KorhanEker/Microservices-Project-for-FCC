@@ -13,6 +13,7 @@ var moment = require('moment'); // require
 var { nanoid } = require('nanoid');
 const validUrl = require('valid-url');
 var dns = require('dns')
+const dateformat = require('dateformat');
 moment().format();
 
 
@@ -230,12 +231,12 @@ app.post('/api/exercise/add', (req, res) => {
     console.log(user, ' <= user')
     newExercise.save((err,doc)=>{
       if(err) return console.error(err);
-      let rObj = {...user,...{
+      let rObj = {...user._doc,...{
         username: user.username,
         userId: req.body.userId,
         description: req.body.description,
         duration: req.body.duration,
-        date: date}
+        date: dateformat(date,'yyyy-mm-dd')}
       };
       res.json(rObj);
     });

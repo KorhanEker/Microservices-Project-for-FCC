@@ -230,12 +230,12 @@ app.post('/api/exercise/add', (req, res) => {
     console.log(user, ' <= user')
     newExercise.save((err,doc)=>{
       if(err) return console.error(err);
-      let rObj = {
+      let rObj = {...user,...{
         username: user.username,
         userId: req.body.userId,
         description: req.body.description,
         duration: req.body.duration,
-        date: date
+        date: date}
       };
       res.json(rObj);
     });

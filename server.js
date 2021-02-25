@@ -243,10 +243,7 @@ app.post('/api/exercise/add', (req, res) => {
           username: user.username,
           description: newExercise.description,
           duration: newExercise.duration,
-          inputDate: newExercise.date,
-          date: new Date(newExercise.date).toDateString(),
-          dateUnformatted: newExercise.date, 
-          actualDate: newExercise.actualDate
+          date: new Date(newExercise.date).toDateString()
         };
         res.json(rObj);
       });
@@ -257,8 +254,9 @@ app.get('/api/exercise/log', (req, res) => {
   let userID = req.query.userId;
   let from = req.query.from;
   let to = req.query.to;
-  let limit = req.query.limit;
-  console.log(from,' ',to,' ',limit);
+  let limitNum = Number(req.query.limit);
+  console.log(from,' ',to,' ',limitNum,' <= from to and limit values');
+  if(isBlank(limitNum)) limitNum = 0;
   User.findById(userID, (err, user) => {
     if (err) { return console.error(err); }
     let userObj = {
@@ -278,6 +276,7 @@ app.get('/api/exercise/log', (req, res) => {
       }}
     };
     var queryObj = queryFunc();
+
     if(isEmpty(queryObj)){
       queryObj = {
         userId: userID
@@ -288,18 +287,21 @@ app.get('/api/exercise/log', (req, res) => {
       actualDate: queryObj.date
       };
     }
-    console.log(queryObj, ' <= queryObj')
-    Exercise.find(queryObj, (err, exercises) => {
+    console.log(queryObj, ' <= queryObj');
+    Exercise.find(queryObj)
+    .limit(limitNum)
+    .exec((err, exercises) => {
+      console.log(exercises,' <= exercises');
       if (err) { return console.error(err); }
       exercises.sort((a,b)=> (a.date > b.date) ?1:-1);
-      const modifiedExercises = exercises.map(exercise =>{
+      let modifiedExercises = exercises.map(exercise =>{
         return {
           userId: exercise.userId,
           description: exercise.description,
           duration: exercise.duration,
           date: new Date(exercise.date).toDateString()
         }
-      })
+      });
       console.log(modifiedExercises, ' <= exercises');
       let exerciseObj = {log: modifiedExercises,count:modifiedExercises.length};
       let mergedObj = Object.assign(userObj, exerciseObj);

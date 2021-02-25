@@ -16,7 +16,8 @@ var dns = require('dns')
 const dateformat = require('dateformat');
 moment().format();
 var multer  = require('multer');
-var upload = multer({ dest: 'uploads/' })
+var upload = multer();
+
 
 
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -310,12 +311,16 @@ app.get('/api/exercise/log', (req, res) => {
   })
 });
 
-app.post('/api/fileanalyse', upload.single('upfile'),(req,res)=>{
-  const {originalname : name,mimetype : type,size} = req.file;
+app.post('/api/fileanalyse', upload.single('upfile'),(req,res,next)=>{
+  if(!req.file){
+    const error = new Error('Please choose a file!');
+    error.httpStatusCode = 400;
+    return next(error.message);
+  }
   res.json({
-    name,
-    type,
-    size
+    name: req.file.originalname,
+    type: req.file.mimetype,
+    size: req.file.size
   });
 });  
 

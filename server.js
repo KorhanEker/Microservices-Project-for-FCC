@@ -32,7 +32,8 @@ var Exercise = mongoose.model('Exercise', new Schema({
   userId: { type: String, required: true },
   description: { type: String, required: true },
   duration: { type: Number, required: true },
-  date: { type: Date, default: Date.now },
+  date: String,
+  actualDate:{type:Date,default:Date.now}
 }));
 
 app.use(bodyParser.json());
@@ -177,6 +178,14 @@ function isBlank(str) {
   return (!str || /^\s*$/.test(str));
 }
 
+function isEmpty(obj) {
+  for(var key in obj) {
+      if(obj.hasOwnProperty(key))
+          return false;
+  }
+  return true;
+}
+
 app.post('/api/exercise/new-user', (req, res) => {
   let postedUser = req.body.username;
   if (isBlank(postedUser)) { return console.error('No username has been provided'); }
@@ -218,12 +227,13 @@ app.post('/api/exercise/add', (req, res) => {
   let user = User.findById(req.body.userId,
     (err, user) => {
       if (err) { return console.error(err, ' <= No user with the id found'); }
-      var date = isBlank(req.body.date) ? new Date().toISOString().substring(0, 10) : new Date(req.body.date).toISOString().substring(0.10);
+      var date = isBlank(req.body.date) ? new Date().toISOString().substring(0, 10) : new Date(req.body.date).toISOString().substring(0,10);
       const newExercise = new Exercise({
         userId: req.body.userId,
         description: req.body.description,
         duration: parseInt(req.body.duration),
-        date: date
+        date: date,
+        actualDate: new Date(date)  
       });
 
       newExercise.save((err, doc) => {
@@ -233,7 +243,10 @@ app.post('/api/exercise/add', (req, res) => {
           username: user.username,
           description: newExercise.description,
           duration: newExercise.duration,
-          date: new Date(newExercise.date).toDateString()
+          inputDate: newExercise.date,
+          date: new Date(newExercise.date).toDateString(),
+          dateUnformatted: newExercise.date, 
+          actualDate: newExercise.actualDate
         };
         res.json(rObj);
       });
@@ -242,24 +255,59 @@ app.post('/api/exercise/add', (req, res) => {
 
 app.get('/api/exercise/log', (req, res) => {
   let userID = req.query.userId;
+  let from = req.query.from;
+  let to = req.query.to;
+  let limit = req.query.limit;
+  console.log(from,' ',to,' ',limit);
   User.findById(userID, (err, user) => {
     if (err) { return console.error(err); }
     let userObj = {
       _id: userID,
       username: user.username
     };
-    console.log(userObj,' <= userObj');
-    Exercise.find({ userId: userID }, (err, exercises) => {
+    // check if from and to parameters provided.
+    let range= {};
+    var queryFunc = ()=>{
+      if(!isBlank(from)){range.$gte = from;}
+      if(!isBlank(to)){range.$lte = to;}
+      console.log(range, ' <= range');
+      if(isEmpty(range)){return ''}
+      else{
+      return {
+        date: range
+      }}
+    };
+    var queryObj = queryFunc();
+    if(isEmpty(queryObj)){
+      queryObj = {
+        userId: userID
+      };
+    }
+    else{ queryObj = {
+      userId: userID,
+      actualDate: queryObj.date
+      };
+    }
+    console.log(queryObj, ' <= queryObj')
+    Exercise.find(queryObj, (err, exercises) => {
       if (err) { return console.error(err); }
-      console.log(userObj, ' <= userObj')
-      console.log(exercises, ' <= exercises');
-      let exerciseObj = {log: exercises};
+      exercises.sort((a,b)=> (a.date > b.date) ?1:-1);
+      const modifiedExercises = exercises.map(exercise =>{
+        return {
+          userId: exercise.userId,
+          description: exercise.description,
+          duration: exercise.duration,
+          date: new Date(exercise.date).toDateString()
+        }
+      })
+      console.log(modifiedExercises, ' <= exercises');
+      let exerciseObj = {log: modifiedExercises,count:modifiedExercises.length};
       let mergedObj = Object.assign(userObj, exerciseObj);
-      console.log(mergedObj, ' <= mergedObj');
       res.json(mergedObj);
     });
   })
 });
+
 
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);

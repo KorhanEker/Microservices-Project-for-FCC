@@ -9,12 +9,14 @@ const bodyParser = require('body-parser')
 const mongo = require('mongodb'); // for url shortener practice
 const mongoose = require('mongoose'); //for url shortener practice
 const { Schema } = mongoose;
-var moment = require('moment'); // require
+var moment = require('moment'); 
 var { nanoid } = require('nanoid');
 const validUrl = require('valid-url');
 var dns = require('dns')
 const dateformat = require('dateformat');
 moment().format();
+var multer  = require('multer');
+var upload = multer({ dest: 'uploads/' })
 
 
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -74,6 +76,10 @@ app.get('/urlShortener', (req, res) => {
 
 app.get('/exerciseTracker', (req, res) => {
   res.sendFile(__dirname + '/views/exerciseTracker.html');
+})
+
+app.get('/fileMetaDataService', (req, res) => {
+  res.sendFile(__dirname + '/views/fileMetadataService.html');
 })
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
@@ -251,11 +257,9 @@ app.post('/api/exercise/add', (req, res) => {
 });
 
 app.get('/api/exercise/log', (req, res) => {
-  let userID = req.query.userId;
-  let from = req.query.from;
-  let to = req.query.to;
-  let limitNum = Number(req.query.limit);
-  console.log(from,' ',to,' ',limitNum,' <= from to and limit values');
+  
+  const {userID,from,to} = req.query;
+  const limitNum = Number(req.query.limit);
   if(isBlank(limitNum)) limitNum = 0;
   User.findById(userID, (err, user) => {
     if (err) { return console.error(err); }
@@ -268,7 +272,6 @@ app.get('/api/exercise/log', (req, res) => {
     var queryFunc = ()=>{
       if(!isBlank(from)){range.$gte = from;}
       if(!isBlank(to)){range.$lte = to;}
-      console.log(range, ' <= range');
       if(isEmpty(range)){return ''}
       else{
       return {
@@ -287,11 +290,9 @@ app.get('/api/exercise/log', (req, res) => {
       actualDate: queryObj.date
       };
     }
-    console.log(queryObj, ' <= queryObj');
     Exercise.find(queryObj)
     .limit(limitNum)
     .exec((err, exercises) => {
-      console.log(exercises,' <= exercises');
       if (err) { return console.error(err); }
       exercises.sort((a,b)=> (a.date > b.date) ?1:-1);
       let modifiedExercises = exercises.map(exercise =>{
@@ -302,7 +303,6 @@ app.get('/api/exercise/log', (req, res) => {
           date: new Date(exercise.date).toDateString()
         }
       });
-      console.log(modifiedExercises, ' <= exercises');
       let exerciseObj = {log: modifiedExercises,count:modifiedExercises.length};
       let mergedObj = Object.assign(userObj, exerciseObj);
       res.json(mergedObj);
@@ -310,6 +310,14 @@ app.get('/api/exercise/log', (req, res) => {
   })
 });
 
+app.post('/api/fileanalyse', upload.single('upfile'),(req,res)=>{
+  const {originalname : name,mimetype : type,size} = req.file;
+  res.json({
+    name,
+    type,
+    size
+  });
+});  
 
 var listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);

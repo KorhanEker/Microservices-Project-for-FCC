@@ -7,4 +7,4 @@ This is a portfolio application which displays my API and Microservices work as 
 
 Other pages will be added in the future to complete this app as a portfolio project
 
-Live LINK for this project: https://damp-tundra-95833.herokuapp.com/
+Live LINK for this project: https://api-microservices-portfolio.herokuapp.com/
